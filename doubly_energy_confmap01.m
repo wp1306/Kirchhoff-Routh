@@ -3,7 +3,6 @@ close;
 
 rng(33);
 
-addpath('sk_function')
 
 Zpp = exp(1i*pi*(0:0.01:2));
 dthp = pi/200; thp = dthp/2:dthp:2*pi-dthp/2;
