@@ -1,7 +1,3 @@
-%% 三重連結の場合の細胞配向公式
-% prime 関数のproduct formulaを用いるので，三重連結の場合のみが対象．
-% branch を気にする．
-
 clear;
 close;
 
@@ -19,8 +15,6 @@ Zp = exp(1i*thp);
 %% domainの設定
 logn = @(z,a) log((z - a).*exp(-1i*angle(-a))) + 1i*angle(-a);
 rho = 0.3;
-%rholist = 0.3;
-% (z-a)だけ取り除く
 Pz = @(z) P(z,rho); Phz = @(z) Ph(z,rho);
 Kz = @(z) K(z,rho); Khz = @(z) Kh(z,rho);
 Lz = @(z) L(z,rho); Lhz = @(z) Lh(z,rho);
@@ -43,16 +37,12 @@ dh = 1e-3;
 %zn = [+0.8, -0.8  - 0.1i, 0.8i, -0.8i];
 zn = [0.8+0.2i, -0.5+0.1i];
 qn = [-0.5, 0.5];
-%qn = [-0.5,-0.5, +0.5, + 0.5];
-
-% seems perfect!!
 %c0 = sum(qn.*angle(zn)); have to modify because we are considering the map
 c0 = imag(sum(qn.*log(zn)));
 c1 = - c0;
 Period = 0;
 Qn = c1 + pi*Period;
 fhat = @(z) fhat_doubly(z,zn,qn,rho);
-%f = @(z) fhat(z) - 1i*Qn*log(z)./log(rho) - log(z) - 1i*c0 + pi*1i/2; %
 f = @(z) fhat(z) - (1i*Qn./log(rho) + 1)*log(z) - 1i*c0 + pi*1i/2 + hz(z); %
 fmod = @(z) fhat(z) - (1i*Qn./log(rho) + 1)*log(z) - 1i*c0 + pi*1i/2;
 dfhatdz = @(z) dfhatdz_doubly(z,zn,qn,rho);
@@ -108,60 +98,6 @@ disp(Fint - total_energy);
 
 
 
-
-
-plotf = 0;
-if plotf == 1
-Zpp = exp(1i*pi*(0:0.01:2));
-bv0 = g(Zpp); bv1 = g(rho*Zpp); 
-phiD = @(z) -imag(f(z));
-D = abs((g(-1)));
-dxx = 2.5e-3;
-[X,Y] = meshgrid(-1:dxx:1); Z = X + 1i*Y;
-mask = (abs(Z) < 1).*(abs(Z) > rho) + 0;
-mask(mask==0) = NaN;
-phiht = phiD(Z); % OK
-
-dd = D/250;
-[Xt,Yt] = meshgrid(-D:dd:D);
-maskt = inpolygon(Xt,Yt,real(bv0),imag(bv0)) - inpolygon(Xt,Yt,real(bv1),imag(bv1)) + 0;
-maskt(maskt==0) = NaN;
-Zpt = g(X(mask==1)+1i*Y(mask==1));
-phit = griddata(real(Zpt),imag(Zpt),phiht(mask==1),Xt,Yt);
-phit = mod(phit,pi);
-
-h = figure();
-p = pcolor(Xt,Yt,phit.*maskt);
-hold on;
-% 配向を線で表す
-ll = 0.1; di = 0.1;
-[Xp,Yp] = meshgrid(-D+di/2:di:D-di/2);
-angpmat = griddata(real(Zpt),imag(Zpt),phiht(mask==1),Xp,Yp);
-for xi = 1:length(Xp)
-    for yi = 1:length(Yp)
-        wp = Xp(xi,yi)+1i*Yp(xi,yi);
-        if (inpolygon(real(wp),imag(wp),real(bv0),imag(bv0))==1) && (inpolygon(real(wp),imag(wp),real(bv1),imag(bv1))==0)
-            angp = angpmat(xi,yi);
-            vec = ll*exp(1i*angp)+1i*0.00001;
-            plot([wp - vec/2, wp + vec/2],"k-","LineWidth",1.2);
-        end
-    end
-end
-plot(g(zn(1))+1i*1e-8,"ro","MarkerSize",15.0,'MarkerFaceColor','r');
-plot(g(zn(3))+1i*1e-8,"b","MarkerSize",15.0,'MarkerFaceColor','b','Marker','square');
-plot(g(zn(2))+1i*1e-8,"ro","MarkerSize",15.0,'MarkerFaceColor','r');
-plot(g(zn(4))+1i*1e-8,"b","MarkerSize",15.0,'MarkerFaceColor','b','Marker','square');
-plot(bv1,'k-','LineWidth',2.0);
-plot(bv0,'k-','LineWidth',2.0);
-%plot(rho*Zp,'k-','LineWidth',2.0);
-
-colormap(h,'hsv');
-alpha(p,0.3);
-shading interp;
-axis square;
-axis off;
-
-end 
 
 figure()
 bv0 = exp(1i*pi/4)*bv0;
